@@ -1,9 +1,6 @@
-//ab bro apan same movie ko baar baar add to list krte h or wo ho bhi jati hai,but that is a major challange
-//lets work upon it
-//kuch nhi bro apan ne app component me jake dekha ki yaha apne pass watched movie ka object h
-//usko utayaa moviedetails me pass kiya or usme check kiya ki current selectedID equal hai kya jo movie object uthaya hai
-//apan ne ab humne agar true hai to render karwaya paragraph jisme saaf saaf likhdiya ki bro u rated this
-//or rating bhi leli taki or creative lage
+//ab add kiya hai movielist me se movies ko watched section me to hata bhi to skte h na bhai mere
+//lets do that shit now also
+
 
 
 import React, { useEffect, useState } from 'react';
