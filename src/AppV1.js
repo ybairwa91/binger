@@ -1,3 +1,5 @@
+// STATIC APP
+
 import React from 'react';
 import './index.css'
 

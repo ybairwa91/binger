@@ -50,14 +50,19 @@ body {
 }
 
 .box {
-    background-color: var(--color-background-500);
+    /* background-color: var(--color-background-500);
     width: 42rem;
     max-width: 42rem;
 
     border-radius: 0.9rem;
     overflow: auto;
+    position: static; */
+    width: 42rem;
+    max-width: 42rem;
+    background-color: var(--color-background-500);
+    border-radius: 0.9rem;
+    overflow: auto;
     position: relative;
-
 }
 
 .loader {
