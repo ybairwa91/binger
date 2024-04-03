@@ -1,24 +1,22 @@
+// MOVIE INFORMATION
+// Handle after when u select a movie to display details on the right side
 
-//2 task in this versions
-//ADDING SELECTED MOVIE TO WATCHEDLIST
-//ye to simple hai
-//ke naaya object create krna hai existing one ke through jisme jo selectedid h 
-//fir add to list wale btn pe onClick karke sab kuch taam jhaam krlo
+//samajh phle
+//ek useState create kiya selectedId,setSelectedId
+//apane ko li element me se ek ek element pe click krna h wo kara fir apan
+//AB JAISE HI CLICK KIYA wo state ko change krega or jo selected h uski id pass krega in handlerfuncton
+//ab apan ne ek naya component banaya moviedetail ab wo pass hoga agar selectedId H to warna to main homepage rahega rightbox me jo tha
+//jo apan ne render karayah app component me jake dekh second box me ya to moviedetail component ya fir jo phle se the
+//us onClick se humne function return kiya with one id as argument jisko handlerfunction ne use krliya
+//jake dekh render karaydiya mast
+//now one more thing if someone click on same movie it will come back to homepage
 
 
 
-//star ka game samjho,bhai ki apan ne user rating di now its in starrating jise hume basically moviedetails me chahiye
-// or apan ko wo detail mangta hai watchedMOVIE 
-//component me but kaise
-//apan ne ek state liya naam rakha userRating ab use pass krldiye ek func ke through,ab mere bhai
-//use as a prop pass krdiya setRating me
-//ab use call karaya kaha starrating ke us handler function me jaha rating store ho rhi hai
-//so moviedetails me dala  ek state or usme hume setState pass krdiya fir wo call hua jaha rating change ho rahi h
-//and then we update the userRating using setUserRating and thats how we got whatever we want to.
 
 import React, { useEffect, useState } from 'react';
 import './index.css'
-import StarRating from './StarRating'
+import StarRating from '../src/StarRating'
 
 const tempMovieData = [
   {
@@ -82,7 +80,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
 
 
-
+  //this handler for click on any movie from movielist
   function handleSelectMovie(id) {
     setSelectedId(selectedId => (id === selectedId ? null : id))
   }
@@ -90,12 +88,6 @@ export default function App() {
   function handleCloseMovie() {
     setSelectedId(null)
   }
-
-
-  function handleAddWatched(movie) {
-    setWatched(watched => [...watched, movie])
-  }
-
 
   useEffect(
     function () {
@@ -147,17 +139,12 @@ export default function App() {
           {!isLoading && <MovieList movies={movies}
             onSelectMovie={handleSelectMovie} />}
           {error && <ErrorMessage message={error} />}
-
         </Box>
 
         <Box>
           <>
             {
-              selectedId ?
-                <MovieDetails selectedId={selectedId}
-                  onCloseMovie={handleCloseMovie}
-                  setIsLoading={setIsLoading}
-                  onAddWatched={handleAddWatched} />
+              selectedId ? <MovieDetails selectedId={selectedId} onCloseMovie={handleCloseMovie} setIsLoading={setIsLoading} />
                 :
                 <>
                   <WatchedSummary watched={watched} />
@@ -284,31 +271,16 @@ function Movie({ movie, onSelectMovie }) {
 
 
 
-function MovieDetails({ selectedId, onAddWatched, onCloseMovie }) {
-
+function MovieDetails({ selectedId }) {
   const [movie, setMovie] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-  const [userRating, setUserRating] = useState('');
+
   const { Title: title, Year: year, Poster: poster, Runtime: runtime, imdbRating, Plot: plot,
     Released: released, Actors: actors, Director: director, Genre } = movie;
 
-
-  function handleAdd() {
-    const newWatchedMovie = {
-      imdbID: selectedId,
-      title,
-      year,
-      poster,
-      imdbRating: Number(imdbRating),
-      runtime: Number(runtime.split(" ").at(0)),
-      userRating
-    }
-    onAddWatched(newWatchedMovie)
-    onCloseMovie()
-  }
-
-
-
+  console.log(title, year);
+  //bhai ab har baar to render hoga hi ye component jab jab apan click karenge or kuch naya ayega right side me
+  //ab ya to state usse kro ya fir useEffect par apan api se fetch karenge details to bhai useEffect chahiye rahega
 
   useEffect(function () {
     async function getMovieDetails() {
@@ -323,8 +295,6 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie }) {
   }, [selectedId])
 
 
-
-
   return (
     <div className="details">
 
@@ -332,27 +302,19 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie }) {
         <>
           <header>
 
-            {/* Ye button tabhi dikhayenge jab userRating 0 se badi hoo,matlab jaise hi koi star rating de uske baad hi show kree / */}
-
-            {
-              userRating > 0 &&
-              <button className="btn-back" >
-                &larr;
-              </button>
-            }
+            <button className="btn-back" >
+              &larr;
+            </button>
 
             <img src={poster} alt={`Poster of ${movie} movie`} />
 
             <div className="details-overview">
 
               <h2>{title}</h2>
-
               <p>
                 {released} &bull; {runtime}
               </p>
-
               <p>{Genre}</p>
-
               <p>
                 <span>⭐️</span>
                 {imdbRating} IMDb rating
@@ -366,10 +328,7 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie }) {
 
           <section>
             <div className='rating'>
-
-              <StarRating maxRating={10} size={24} onSetRating={setUserRating} />
-              <button button className='btn-add' onClick={handleAdd}>+ Add to List</button>
-
+              <StarRating maxRating={10} size={24} />
             </div>
 
             <p>
@@ -393,8 +352,6 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie }) {
 }
 
 
-//////////////////////////
-///WATCHED section
 
 function WatchedSummary({ watched }) {
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
@@ -414,7 +371,7 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>🌟</span>
-          <span>{avgUserRating.toFixed(1)}</span>
+          <span>{avgUserRating}</span>
         </p>
         <p>
           <span>⏳</span>
@@ -439,8 +396,8 @@ function WatchedMoviesList({ watched }) {
 function WatchedMovie({ movie }) {
   return (
     <li>
-      <img src={movie.poster} alt={`${movie.Title} poster`} />
-      <h3>{movie.title}</h3>
+      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.Title}</h3>
       <div>
         <p>
           <span>⭐️</span>

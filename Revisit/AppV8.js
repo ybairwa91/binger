@@ -1,22 +1,14 @@
-// MOVIE INFORMATION
-// Handle after when u select a movie to display details on the right side
-
-//samajh phle
-//ek useState create kiya selectedId,setSelectedId
-//apane ko li element me se ek ek element pe click krna h wo kara fir apan
-//AB JAISE HI CLICK KIYA wo state ko change krega or jo selected h uski id pass krega in handlerfuncton
-//ab apan ne ek naya component banaya moviedetail ab wo pass hoga agar selectedId H to warna to main homepage rahega rightbox me jo tha
-//jo apan ne render karayah app component me jake dekh second box me ya to moviedetail component ya fir jo phle se the
-//us onClick se humne function return kiya with one id as argument jisko handlerfunction ne use krliya
-//jake dekh render karaydiya mast
-//now one more thing if someone click on same movie it will come back to homepage
-
-
+//ab bro apan same movie ko baar baar add to list krte h or wo ho bhi jati hai,but that is a major challange
+//lets work upon it
+//kuch nhi bro apan ne app component me jake dekha ki yaha apne pass watched movie ka object h
+//usko utayaa moviedetails me pass kiya or usme check kiya ki current selectedID equal hai kya jo movie object uthaya hai
+//apan ne ab humne agar true hai to render karwaya paragraph jisme saaf saaf likhdiya ki bro u rated this
+//or rating bhi leli taki or creative lage
 
 
 import React, { useEffect, useState } from 'react';
 import './index.css'
-import StarRating from './StarRating'
+import StarRating from '../src/StarRating'
 
 const tempMovieData = [
   {
@@ -80,7 +72,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
 
 
-  //this handler for click on any movie from movielist
+
   function handleSelectMovie(id) {
     setSelectedId(selectedId => (id === selectedId ? null : id))
   }
@@ -88,6 +80,12 @@ export default function App() {
   function handleCloseMovie() {
     setSelectedId(null)
   }
+
+
+  function handleAddWatched(movie) {
+    setWatched(watched => [...watched, movie])
+  }
+
 
   useEffect(
     function () {
@@ -139,12 +137,19 @@ export default function App() {
           {!isLoading && <MovieList movies={movies}
             onSelectMovie={handleSelectMovie} />}
           {error && <ErrorMessage message={error} />}
+
         </Box>
 
         <Box>
           <>
             {
-              selectedId ? <MovieDetails selectedId={selectedId} onCloseMovie={handleCloseMovie} setIsLoading={setIsLoading} />
+              selectedId ?
+                <MovieDetails selectedId={selectedId}
+                  onCloseMovie={handleCloseMovie}
+                  setIsLoading={setIsLoading}
+                  onAddWatched={handleAddWatched}
+                  watched={watched}
+                />
                 :
                 <>
                   <WatchedSummary watched={watched} />
@@ -271,16 +276,35 @@ function Movie({ movie, onSelectMovie }) {
 
 
 
-function MovieDetails({ selectedId }) {
+function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
+
   const [movie, setMovie] = useState({})
   const [isLoading, setIsLoading] = useState(false)
+  const [userRating, setUserRating] = useState('');
+  const isWatched = watched.map(movie => movie.imdbID).includes(selectedId)
+  const watchedUserRating = watched.find(movie => movie.imdbID === selectedId)?.userRating
 
   const { Title: title, Year: year, Poster: poster, Runtime: runtime, imdbRating, Plot: plot,
     Released: released, Actors: actors, Director: director, Genre } = movie;
 
-  console.log(title, year);
-  //bhai ab har baar to render hoga hi ye component jab jab apan click karenge or kuch naya ayega right side me
-  //ab ya to state usse kro ya fir useEffect par apan api se fetch karenge details to bhai useEffect chahiye rahega
+
+  function handleAdd(id) {
+
+    const newWatchedMovie = {
+      imdbID: selectedId,
+      title,
+      year,
+      poster,
+      imdbRating: Number(imdbRating),
+      runtime: Number(runtime.split(" ").at(0)),
+      userRating
+    }
+    onAddWatched(newWatchedMovie)
+    onCloseMovie()
+  }
+
+
+
 
   useEffect(function () {
     async function getMovieDetails() {
@@ -293,6 +317,8 @@ function MovieDetails({ selectedId }) {
 
     getMovieDetails();
   }, [selectedId])
+
+
 
 
   return (
@@ -311,10 +337,13 @@ function MovieDetails({ selectedId }) {
             <div className="details-overview">
 
               <h2>{title}</h2>
+
               <p>
                 {released} &bull; {runtime}
               </p>
+
               <p>{Genre}</p>
+
               <p>
                 <span>⭐️</span>
                 {imdbRating} IMDb rating
@@ -328,7 +357,22 @@ function MovieDetails({ selectedId }) {
 
           <section>
             <div className='rating'>
-              <StarRating maxRating={10} size={24} />
+              {!isWatched ?
+                <>
+                  <StarRating maxRating={10} size={24} onSetRating={setUserRating} />
+                  {
+                    userRating > 0 &&
+                    <button button className='btn-add' onClick={handleAdd}>+ Add to List</button>
+                  }
+
+                </>
+                : <p>You rated this Movie {watchedUserRating}
+                  <span>
+                    ⭐️
+                  </span>
+                </p>
+              }
+
             </div>
 
             <p>
@@ -352,6 +396,8 @@ function MovieDetails({ selectedId }) {
 }
 
 
+//////////////////////////
+///WATCHED section
 
 function WatchedSummary({ watched }) {
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
@@ -371,7 +417,7 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>🌟</span>
-          <span>{avgUserRating}</span>
+          <span>{avgUserRating.toFixed(1)}</span>
         </p>
         <p>
           <span>⏳</span>
@@ -396,8 +442,8 @@ function WatchedMoviesList({ watched }) {
 function WatchedMovie({ movie }) {
   return (
     <li>
-      <img src={movie.Poster} alt={`${movie.Title} poster`} />
-      <h3>{movie.Title}</h3>
+      <img src={movie.poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.title}</h3>
       <div>
         <p>
           <span>⭐️</span>

@@ -1,14 +1,24 @@
-//ab bro apan same movie ko baar baar add to list krte h or wo ho bhi jati hai,but that is a major challange
-//lets work upon it
-//kuch nhi bro apan ne app component me jake dekha ki yaha apne pass watched movie ka object h
-//usko utayaa moviedetails me pass kiya or usme check kiya ki current selectedID equal hai kya jo movie object uthaya hai
-//apan ne ab humne agar true hai to render karwaya paragraph jisme saaf saaf likhdiya ki bro u rated this
-//or rating bhi leli taki or creative lage
 
+//2 task in this versions
+//ADDING SELECTED MOVIE TO WATCHEDLIST
+//ye to simple hai
+//ke naaya object create krna hai existing one ke through jisme jo selectedid h 
+//fir add to list wale btn pe onClick karke sab kuch taam jhaam krlo
+
+
+
+//star ka game samjho,bhai ki apan ne user rating di now its in starrating jise hume basically moviedetails me chahiye
+// or apan ko wo detail mangta hai watchedMOVIE 
+//component me but kaise
+//apan ne ek state liya naam rakha userRating ab use pass krldiye ek func ke through,ab mere bhai
+//use as a prop pass krdiya setRating me
+//ab use call karaya kaha starrating ke us handler function me jaha rating store ho rhi hai
+//so moviedetails me dala  ek state or usme hume setState pass krdiya fir wo call hua jaha rating change ho rahi h
+//and then we update the userRating using setUserRating and thats how we got whatever we want to.
 
 import React, { useEffect, useState } from 'react';
 import './index.css'
-import StarRating from './StarRating'
+import StarRating from '../src/StarRating'
 
 const tempMovieData = [
   {
@@ -147,9 +157,7 @@ export default function App() {
                 <MovieDetails selectedId={selectedId}
                   onCloseMovie={handleCloseMovie}
                   setIsLoading={setIsLoading}
-                  onAddWatched={handleAddWatched}
-                  watched={watched}
-                />
+                  onAddWatched={handleAddWatched} />
                 :
                 <>
                   <WatchedSummary watched={watched} />
@@ -276,20 +284,16 @@ function Movie({ movie, onSelectMovie }) {
 
 
 
-function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
+function MovieDetails({ selectedId, onAddWatched, onCloseMovie }) {
 
   const [movie, setMovie] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [userRating, setUserRating] = useState('');
-  const isWatched = watched.map(movie => movie.imdbID).includes(selectedId)
-  const watchedUserRating = watched.find(movie => movie.imdbID === selectedId)?.userRating
-
   const { Title: title, Year: year, Poster: poster, Runtime: runtime, imdbRating, Plot: plot,
     Released: released, Actors: actors, Director: director, Genre } = movie;
 
 
-  function handleAdd(id) {
-
+  function handleAdd() {
     const newWatchedMovie = {
       imdbID: selectedId,
       title,
@@ -328,9 +332,14 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
         <>
           <header>
 
-            <button className="btn-back" >
-              &larr;
-            </button>
+            {/* Ye button tabhi dikhayenge jab userRating 0 se badi hoo,matlab jaise hi koi star rating de uske baad hi show kree / */}
+
+            {
+              userRating > 0 &&
+              <button className="btn-back" >
+                &larr;
+              </button>
+            }
 
             <img src={poster} alt={`Poster of ${movie} movie`} />
 
@@ -357,21 +366,9 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
 
           <section>
             <div className='rating'>
-              {!isWatched ?
-                <>
-                  <StarRating maxRating={10} size={24} onSetRating={setUserRating} />
-                  {
-                    userRating > 0 &&
-                    <button button className='btn-add' onClick={handleAdd}>+ Add to List</button>
-                  }
 
-                </>
-                : <p>You rated this Movie {watchedUserRating}
-                  <span>
-                    ⭐️
-                  </span>
-                </p>
-              }
+              <StarRating maxRating={10} size={24} onSetRating={setUserRating} />
+              <button button className='btn-add' onClick={handleAdd}>+ Add to List</button>
 
             </div>
 

@@ -1,9 +1,13 @@
-//ab add kiya hai movielist me se movies ko watched section me to hata bhi to skte h na bhai mere
-//lets do that shit now also
-
-//BHAI AB OR USEeffect usekrlete hai taki thoda jo title h wo bhi sahi rahe 
-
-//ye to imported maal hai
+//bhai ab title change kr rhee h using useEffect and dependency bhi title daaldi
+//par jab wapas dubara unselect kr rhee h movie ko to still title last updated a rha h kyu kyuki,title to ab h hi nhi
+//to dikkat ye unmout kaise kree matlab ki title jo ki state h uske change hone par sab render hota h,sab matlab moviedetail
+//or usEffect bhi hua h re-render but title last stage wala hi reh gaaya
+//iske liye use krte h cleanup function
+//a function sets the title back to binger
+//bro understand useEffect ek component me hai
+//to jab wo component unmount hogaa na tab jaake useEffect kam karegaa
+//clean up function when u unmount the compnenent where useEffect is defined
+//clean up function also execute between renders bhai krke dekh do movie select and see console
 import React, { useEffect, useState } from 'react';
 import './index.css'
 import StarRating from './StarRating'
@@ -69,7 +73,7 @@ const KEY = '5b697c6c';
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
-  const [query, setQuery] = useState("interstellar")
+  const [query, setQuery] = useState("")
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('')
   const [selectedId, setSelectedId] = useState(null);
@@ -136,17 +140,6 @@ export default function App() {
         <NumResult movies={movies} />
       </Navbar>
 
-
-
-      {/*  <Box element={<MovieList movies={movies} />} />
-        <Box element={
-          <>
-            <WatchedMovieSummary watched={watched} />
-            <WatchedMovieList watched={watched} />
-          </>
-        }
-        />
-      */}
 
       <Main>
         <Box movies={movies}>
@@ -344,6 +337,14 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
 
     document.title = `Movie | ${title}`
 
+    return function () {
+      document.title = "Binger";
+      //bhai dekh function hai to closure wala concept samjh yaha par
+      //see clean up function only render after you unmount this movieDetail component ko unmount krdee
+      //matlab title state to destroy hogyi but fir bhi console me title a rhaa h kyu
+      //kyuki function remember its enviromen variable where it is defined.
+      console.log(`Clean up effect for Movie ${title}`);
+    }
   }, [title])
 
 
