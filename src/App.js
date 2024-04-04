@@ -20,6 +20,7 @@ const tempMovieData = [
     Year: "2010",
     Poster:
       "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    tempData: true,
   },
   {
     imdbID: "tt0133093",
@@ -27,6 +28,7 @@ const tempMovieData = [
     Year: "1999",
     Poster:
       "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
+    tempData: true,
   },
   {
     imdbID: "tt6751668",
