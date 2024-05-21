@@ -1,35 +1,85 @@
-//useRefs
-//real use case to see how many times user select rating and change it
-//star is in moviedetaile come there habibi
-//WE ARE NOT ALLOWED TO MUTATE REF IN RENDER LOGIC,USE useEffect mostly
-import React, { useEffect, useRef, useState } from 'react';
+
+//isme hum ek feature add krengee jisme escape key use krke bro tu moviedetails wale section se back ho jayega
+//lets see how
+
+
+import React, { useEffect, useState } from 'react';
 import './index.css'
-import StarRating from './StarRating'
+import StarRating from '../src/StarRating'
 
 
+
+const tempMovieData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    tempData: true,
+  },
+  {
+    imdbID: "tt0133093",
+    Title: "The Matrix",
+    Year: "1999",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
+    tempData: true,
+  },
+  {
+    imdbID: "tt6751668",
+    Title: "Parasite",
+    Year: "2019",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
+  },
+
+];
+
+const tempWatchedData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    runtime: 148,
+    imdbRating: 8.8,
+    userRating: 10,
+  },
+  {
+    imdbID: "tt0088763",
+    Title: "Back to the Future",
+    Year: "1985",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+    runtime: 116,
+    imdbRating: 8.5,
+    userRating: 9,
+  },
+];
+
+//ye logic hai jo outside of the components hai
 const average = (arr) =>
   arr.reduce((acc, cur, i) => acc + cur / arr.length, 0)
 
-
+//variables
 const KEY = '5b697c6c';
 
+
+//ye apna app component
 export default function App() {
   const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
   const [query, setQuery] = useState("")
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('')
   const [selectedId, setSelectedId] = useState(null);
 
 
-  const [watched, setWatched] = useState(function () {
-    const storedValue = localStorage.getItem('watched')
-    return JSON.parse(storedValue);
-  });
-
   function handleSelectMovie(id) {
     setSelectedId(selectedId => (id === selectedId ? null : id))
   }
-
 
   function handleCloseMovie() {
     setSelectedId(null)
@@ -37,8 +87,7 @@ export default function App() {
 
 
   function handleAddWatched(movie) {
-    setWatched(watched => [...watched, movie]);
-
+    setWatched(watched => [...watched, movie])
   }
 
   function handleDeleteWatched(id) {
@@ -46,20 +95,17 @@ export default function App() {
   }
 
 
-  useEffect(function () {
-    localStorage.setItem('watched', JSON.stringify(watched))
-  }, [watched])
-
-
-
   useEffect(
     function () {
+      // Install AbortController brower api in variable called controller
+      const controller = new AbortController();
+
       async function fetchMovies() {
         try {
           setIsLoading(true);
           setError('')
           const res = await
-            fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`)
+            fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`, { signal: controller.signal })
 
           if (!res.ok) throw new Error('Something went wrong with fetching Movies')
           const data = await res.json();
@@ -71,7 +117,10 @@ export default function App() {
           setError('');
 
         } catch (err) {
-          setError(err.message)
+
+          if (err.name !== 'AbortError') {
+            setError(err.message)
+          }
         } finally {
           setIsLoading(false);
         }
@@ -83,6 +132,10 @@ export default function App() {
       }
 
       fetchMovies()
+
+      return function () {
+        controller.abort()
+      }
     }, [query]
 
   )
@@ -162,24 +215,7 @@ function Logo() {
   )
 }
 
-
 function Search({ query, setQuery }) {
-  const inputEl = useRef(null);
-
-  useEffect(function () {
-    function callback(e) {
-      if (document.activeElement === inputEl.current) return;
-      if (e.code === 'Enter') {
-        inputEl.current.focus()
-        setQuery('')
-      }
-    }
-    document.addEventListener('keydown', callback)
-
-    return () => document.addEventListener('keydown', callback)
-
-  }, [setQuery])
-
 
   return (
     <input
@@ -187,12 +223,9 @@ function Search({ query, setQuery }) {
       placeholder='Search Movies..'
       type='text'
       value={query}
-      onChange={(e) => setQuery(e.target.value)}
-      ref={inputEl}
-    />
+      onChange={(e) => setQuery(e.target.value)} />
   )
 }
-
 
 function NumResult({ movies }) {
   return (
@@ -266,23 +299,11 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
   const [movie, setMovie] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [userRating, setUserRating] = useState('');
-
-  const countRef = useRef(0);
-  // let count = 0;
-
-  useEffect(function () {
-    if (userRating) countRef.current = countRef.current + 1;
-    // if (userRating) count = count + 1;
-  }, [userRating])
-
   const isWatched = watched.map(movie => movie.imdbID).includes(selectedId)
   const watchedUserRating = watched.find(movie => movie.imdbID === selectedId)?.userRating
 
-
   const { Title: title, Year: year, Poster: poster, Runtime: runtime, imdbRating, Plot: plot,
     Released: released, Actors: actors, Director: director, Genre } = movie;
-
-
 
 
   function handleAdd(id) {
@@ -294,13 +315,34 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
       poster,
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
-      userRating,
-      countRatingDecisions: countRef.current,
-      count,
+      userRating
     }
     onAddWatched(newWatchedMovie)
-    onCloseMovie();
+    onCloseMovie()
   }
+
+
+
+  useEffect(
+    function () {
+      function callback(e) {
+        if (e.code === 'Escape') {
+          onCloseMovie()
+          // console.log('hey');
+
+        }
+      }
+      //agar cleanup function use nahi krengee to har baar jab bhi escape dabayangee wo eventlistener add hota jayega bro
+      document.addEventListener('keydown', callback)
+
+      //clean up func
+      return function () {
+
+        document.removeEventListener('keydown', callback)
+      }
+    }, [onCloseMovie])
+
+
 
 
   useEffect(function () {
@@ -358,10 +400,9 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
 
             </div>
 
-
           </header>
 
-          {/*    <p>{avgRating}</p>*/}
+
 
           <section>
             <div className='rating'>
@@ -421,7 +462,7 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>⭐️</span>
-          <span>{avgImdbRating.toFixed(1)}</span>
+          <span>{avgImdbRating}</span>
         </p>
         <p>
           <span>🌟</span>
@@ -429,7 +470,7 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>⏳</span>
-          <span>{avgRuntime.toFixed(1)} min</span>
+          <span>{avgRuntime} min</span>
         </p>
       </div>
     </div>
@@ -449,7 +490,6 @@ function WatchedMoviesList({ watched, onDeleteWatched }) {
 }
 
 function WatchedMovie({ movie, onDeleteWatched }) {
-
   return (
     <li>
       <img src={movie.poster} alt={`${movie.Title} poster`} />
@@ -459,7 +499,6 @@ function WatchedMovie({ movie, onDeleteWatched }) {
           <span>⭐️</span>
           <span>{movie.imdbRating}</span>
         </p>
-
         <p>
           <span>🌟</span>
           <span>{movie.userRating}</span>

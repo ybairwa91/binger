@@ -1,10 +1,67 @@
-
-//use localstorage to store information of watched data in the browser
-//wat
-
+//bhai ab title change kr rhee h using useEffect and dependency bhi title daaldi
+//par jab wapas dubara unselect kr rhee h movie ko to still title last updated a rha h kyu kyuki,title to ab h hi nhi
+//to dikkat ye unmout kaise kree matlab ki title jo ki state h uske change hone par sab render hota h,sab matlab moviedetail
+//or usEffect bhi hua h re-render but title last stage wala hi reh gaaya
+//iske liye use krte h cleanup function
+//a function sets the title back to binger
+//bro understand useEffect ek component me hai
+//to jab wo component unmount hogaa na tab jaake useEffect kam karegaa
+//clean up function when u unmount the compnenent where useEffect is defined
+//clean up function also execute between renders bhai krke dekh do movie select and see console
 import React, { useEffect, useState } from 'react';
 import './index.css'
-import StarRating from './StarRating'
+import StarRating from '../src/StarRating'
+
+//ye thode demo object h jab tak api fetch na kre tab tak ke liye
+const tempMovieData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    tempData: true,
+  },
+  {
+    imdbID: "tt0133093",
+    Title: "The Matrix",
+    Year: "1999",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
+    tempData: true,
+  },
+  {
+    imdbID: "tt6751668",
+    Title: "Parasite",
+    Year: "2019",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
+  },
+
+];
+
+const tempWatchedData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    runtime: 148,
+    imdbRating: 8.8,
+    userRating: 10,
+  },
+  {
+    imdbID: "tt0088763",
+    Title: "Back to the Future",
+    Year: "1985",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+    runtime: 116,
+    imdbRating: 8.5,
+    userRating: 9,
+  },
+];
 
 //ye logic hai jo outside of the components hai
 const average = (arr) =>
@@ -14,28 +71,20 @@ const average = (arr) =>
 const KEY = '5b697c6c';
 
 
-
 //ye apna app component
 export default function App() {
   const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
   const [query, setQuery] = useState("")
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('')
   const [selectedId, setSelectedId] = useState(null);
 
-  // const [watched, setWatched] = useState([]);
-  const [watched, setWatched] = useState(function () {
-    const storedValue = localStorage.getItem('watched')
-    return JSON.parse(storedValue);
-  });
-  //never do this instead call a pure function
-  //here we are calling a function nd not passing in
-  // useState(localStorage.getItem('watched'))
+
 
   function handleSelectMovie(id) {
     setSelectedId(selectedId => (id === selectedId ? null : id))
   }
-
 
   function handleCloseMovie() {
     setSelectedId(null)
@@ -43,20 +92,12 @@ export default function App() {
 
 
   function handleAddWatched(movie) {
-    setWatched(watched => [...watched, movie]);
-    // localStorage.setItem('watched', JSON.stringify([...watched, movie]))
+    setWatched(watched => [...watched, movie])
   }
 
   function handleDeleteWatched(id) {
     setWatched(watched => watched.filter(movie => movie.imdbID !== id))
   }
-
-  //localstorage useEffect
-  useEffect(function () {
-    localStorage.setItem('watched', JSON.stringify(watched))
-  }, [watched])
-
-
 
   useEffect(
     function () {
@@ -252,16 +293,11 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
   const [movie, setMovie] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [userRating, setUserRating] = useState('');
-
-
   const isWatched = watched.map(movie => movie.imdbID).includes(selectedId)
   const watchedUserRating = watched.find(movie => movie.imdbID === selectedId)?.userRating
 
-
   const { Title: title, Year: year, Poster: poster, Runtime: runtime, imdbRating, Plot: plot,
     Released: released, Actors: actors, Director: director, Genre } = movie;
-
-
 
 
   function handleAdd(id) {
@@ -276,8 +312,13 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
       userRating
     }
     onAddWatched(newWatchedMovie)
-    onCloseMovie();
+    onCloseMovie()
   }
+
+  console.log(title)
+
+
+
 
 
   useEffect(function () {
@@ -300,6 +341,11 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
 
     return function () {
       document.title = "Binger";
+      //bhai dekh function hai to closure wala concept samjh yaha par
+      //see clean up function only render after you unmount this movieDetail component ko unmount krdee
+      //matlab title state to destroy hogyi but fir bhi console me title a rhaa h kyu
+      //kyuki function remember its enviromen variable where it is defined.
+      console.log(`Clean up effect for Movie ${title}`);
     }
   }, [title])
 
@@ -335,10 +381,9 @@ function MovieDetails({ selectedId, onAddWatched, onCloseMovie, watched }) {
 
             </div>
 
-
           </header>
 
-          {/*    <p>{avgRating}</p>*/}
+
 
           <section>
             <div className='rating'>
@@ -398,7 +443,7 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>⭐️</span>
-          <span>{avgImdbRating.toFixed(1)}</span>
+          <span>{avgImdbRating}</span>
         </p>
         <p>
           <span>🌟</span>
@@ -406,7 +451,7 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>⏳</span>
-          <span>{avgRuntime.toFixed(1)} min</span>
+          <span>{avgRuntime} min</span>
         </p>
       </div>
     </div>
@@ -426,7 +471,6 @@ function WatchedMoviesList({ watched, onDeleteWatched }) {
 }
 
 function WatchedMovie({ movie, onDeleteWatched }) {
-
   return (
     <li>
       <img src={movie.poster} alt={`${movie.Title} poster`} />
@@ -436,7 +480,6 @@ function WatchedMovie({ movie, onDeleteWatched }) {
           <span>⭐️</span>
           <span>{movie.imdbRating}</span>
         </p>
-
         <p>
           <span>🌟</span>
           <span>{movie.userRating}</span>
